@@ -16,7 +16,7 @@ function addCard(element) {
 const placeList = document.querySelector('.places__list');
 
 // @todo: Функция создания карточки
-function renderCard(cards) {
+function renderCards(cards) {
     cards.forEach((card) => {
         const cardElement = addCard(card,  removeCard);
         placeList.appendChild(cardElement);
@@ -28,4 +28,4 @@ function removeCard(cardElement) {
 }
 
 // @todo: Вывести карточки на страницу
-renderCard(initialCards)
+renderCards(initialCards)

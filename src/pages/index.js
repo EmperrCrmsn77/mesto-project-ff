@@ -19,15 +19,18 @@ const inputProfileDesc = profileForm.querySelector('[name = "description"]');
 const profileName = document.querySelector('.profile__title');
 const profileDesc = document.querySelector('.profile__description');
 
-const UserCardformElement = document.querySelector('[name ="new-place"]');
-const inputPlaceTitle = UserCardformElement.querySelector('[name = "place-name"]');
-const inputPlaceLink = UserCardformElement.querySelector('[name = "link"]');
+const userCardFormElement = document.querySelector('[name ="new-place"]');
+const inputPlaceTitle = userCardFormElement.querySelector('[name = "place-name"]');
+const inputPlaceLink = userCardFormElement.querySelector('[name = "link"]');
 
 
 
 function renderCards(cards) {
     cards.forEach((card) => {
-        const cardElement = createCard(card,  deleteCard);
+        const cardElement = createCard(card, {
+            deleteCard, 
+            likeCard, 
+            handleImageClick});
         placeList.appendChild(cardElement);
     })
 }
@@ -58,32 +61,35 @@ function setProfileSettings(popup) {
 }
 
 
-function handlePopupClick(event) {
-    if (event.target.classList.contains('profile__edit-button')) {
-        inputProfileName.value = profileName.textContent;
-        inputProfileDesc.value = profileDesc.textContent;
-        openPopup(profilePopup);
-    } else if (event.target.classList.contains('profile__add-button')) {
-        openPopup(newCardPopup);
-    }
+function openProfilePopup() {
+    inputProfileName.value = profileName.textContent;
+    inputProfileDesc.value = profileDesc.textContent;
+    openPopup(profilePopup);
 }
 
-function addUserCard() {
+function openCardPopup() {
+    openPopup(newCardPopup);
+}
+
+function setCardFormHandler() {
     function handleFormEditSubmit(evt) {
         evt.preventDefault();
         const newCard = {
             name: inputPlaceTitle.value,
             link: inputPlaceLink.value
         };
-        const cardElement = createCard(newCard);
+        const cardElement = createCard(newCard, {
+            deleteCard, 
+            likeCard, 
+            handleImageClick});
         placeList.prepend(cardElement);
         closePopup(newCardPopup); 
-        UserCardformElement.reset();
+        userCardFormElement.reset();
     }
-    UserCardformElement.addEventListener('submit', handleFormEditSubmit);
+    userCardFormElement.addEventListener('submit', handleFormEditSubmit);
 }
 
-export function handleImage(data){
+function handleImageClick(data){
     imageName.src = data.link;
     imageName.alt = data.name;
     imageCaption.textContent = data.name;
@@ -93,7 +99,7 @@ export function handleImage(data){
 renderCards(initialCards);
 setPopupListener();
 setProfileSettings(profilePopup);
-addUserCard();
+setCardFormHandler();
 
-profileButton.addEventListener('click', handlePopupClick);
-newCardButton.addEventListener('click', handlePopupClick);
+profileButton.addEventListener('click', openProfilePopup);
+newCardButton.addEventListener('click', openCardPopup);

@@ -13,3 +13,9 @@
   position: relative;
   overflow: hidden;
 }
+
+.card__like-counter {
+  position: relative;
+  top: 100%;
+  font-size: 13px;
+}

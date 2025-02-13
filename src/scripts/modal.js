@@ -21,3 +21,18 @@ function handleEscape(evt) {
         closePopup(openedPopup);
     }
 }
+
+export function closeByOvelayClick() {
+    const popups = document.querySelectorAll('.popup');
+    popups.forEach((popupElement) => {
+        popupElement.addEventListener('click', (event) => {
+            if (event.target.classList.contains('popup_is-opened')) {
+                closePopup(popupElement)
+            }
+        })
+        const closeButton = popupElement.querySelector('.popup__close');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => closePopup(popupElement))
+        }
+    })
+}

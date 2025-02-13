@@ -1,8 +1,11 @@
 import './index.css';
+import { setLike, removeLike, updateAvatar, getUserData, 
+        getUsersCards, updateUserData, addNewCard, 
+        removeCardFromServer } from '../scripts/api.js';
 import {createCard, likeCard, deleteCard} from "../scripts/card.js";
-import {openPopup, closePopup} from "../scripts/modal.js";
+import {openPopup, closePopup, closeByOvelayClick} from "../scripts/modal.js";
 import { enableValidation, clearValidation } from '../scripts/validation.js';
-import { setLike, removeLike, updateAvatar, getUserData, getUsersCards, updateUserData, addNewCard } from '../scripts/api.js';
+import {setButtonsState} from '../scripts/utils.js'
 
 
 const placeList = document.querySelector('.places__list');
@@ -34,26 +37,13 @@ const popupButtons = document.querySelectorAll('.popup__button');
 function renderCards(cards, userId) {
     cards.forEach((card) => {
         const cardElement = createCard(card, userId,{
-            deleteCard, 
-            likeCard: (cardId, cardLikeButton, likeCount) => likeCard(cardId, cardLikeButton, likeCount, setLike, removeLike), 
-            handleImageClick
+            deleteCard: (cardElement, cardId) => deleteCard(cardElement, cardId, removeCardFromServer), 
+            likeCard,
+            handleImageClick,
+            setLike,
+            removeLike
             });
         placeList.appendChild(cardElement);
-    })
-}
-
-function setPopupListener() {
-    const popups = document.querySelectorAll('.popup');
-    popups.forEach((popupElement) => {
-        popupElement.addEventListener('click', (event) => {
-            if (event.target.classList.contains('popup_is-opened')) {
-                closePopup(popupElement)
-            }
-        })
-        const closeButton = popupElement.querySelector('.popup__close');
-        if (closeButton) {
-            closeButton.addEventListener('click', () => closePopup(popupElement))
-        }
     })
 }
 
@@ -63,6 +53,7 @@ function setProfileSettings(popup) {
         profileName.textContent = inputProfileName.value;
         profileDesc.textContent = inputProfileDesc.value;
         updateUserData(inputProfileName.value, inputProfileDesc.value)
+
         closePopup(popup)
     }
     profileForm.addEventListener('submit',handleFormProfileSubmit); 
@@ -73,46 +64,53 @@ function openProfilePopup() {
     inputProfileName.value = profileName.textContent;
     inputProfileDesc.value = profileDesc.textContent;
     openPopup(profilePopup);
-    clearValidation(profilePopup)
     resetButtonText()
 }
 
 function openCardPopup() {
     openPopup(newCardPopup);
-    clearValidation(newCardPopup)
+
     resetButtonText()
 }
 
 function openAvatarPopup() {
     openPopup(avatarPopup);
-    clearValidation(avatarPopup)
+    clearValidation(avatarPopup,{errorClass: 'popup__error_visible'})
     resetButtonText()
 }
 
 function setCardFormHandler(userId) {
     function handleFormEditSubmit(evt) {
         evt.preventDefault();
-        const newCard = {
-            name: inputPlaceTitle.value,
-            link: inputPlaceLink.value,
-            owner: {_id: userId}
-        };
-        const cardElement = createCard(newCard, userId,{
-            deleteCard, 
-            likeCard, 
-            handleImageClick});
-        placeList.prepend(cardElement);
-        addNewCard(newCard.name, newCard.link);
-        closePopup(newCardPopup); 
-        userCardFormElement.reset();
+        setButtonsState(popupButtons, true);
+
+        const name = inputPlaceTitle.value;
+        const link = inputPlaceLink.value;
+
+        addNewCard(name, link)
+            .then(res => {
+                const cardElement = createCard(res, userId, {  
+                    deleteCard: (cardElement, cardId) => deleteCard(cardElement, cardId, removeCardFromServer), 
+                    likeCard,
+                    setLike,
+                    removeLike, 
+                    handleImageClick
+                });
+                placeList.prepend(cardElement);
+                closePopup(newCardPopup); 
+                clearValidation(newCardPopup, {errorClass: 'popup__error_visible'})
+                userCardFormElement.reset();
+            })
+            .catch(err => console.error("Ошибка при создании карточки:", err));  
     }
+
     userCardFormElement.addEventListener('submit', handleFormEditSubmit);
 }
 
 function changeAvatar(evt) {
     evt.preventDefault();
     const newAvatarUrl = inputAvatar.value;
-
+    setButtonsState(popupButtons, true);
     updateAvatar(newAvatarUrl)
         .then(data => {
             profileImage.style.backgroundImage = `url(${data.avatar})`;
@@ -130,22 +128,10 @@ function handleImageClick(data){
     openPopup(popupImage);
 }
 
-function setButtonsState(isSaving) {
-    popupButtons.forEach(button => {
-        if (isSaving) {
-            button.textContent = 'Сохранение...';
-            button.disabled = true;  
-        } else {
-            button.textContent = 'Сохранить';
-            button.disabled = false;  
-        }
-    });
-}
-
 function handleSaveProfile(evt) {
     evt.preventDefault();  
     
-    setButtonsState(true);
+    setButtonsState(popupButtons, true);
 
     const formData = new FormData(profileForm);
     const profileData = {
@@ -162,9 +148,8 @@ function resetButtonText() {
     })
 }
 
-setPopupListener();
+closeByOvelayClick();
 setProfileSettings(profilePopup);
-setCardFormHandler();
 getUserData();
 enableValidation({
     formSelector: '.popup__form',
@@ -192,6 +177,7 @@ Promise.all([getUserData(), getUsersCards()])
         profileImage.style.backgroundImage = `url(${userData.avatar})`;
 
         renderCards(cards, userData._id);
+        setCardFormHandler(userData._id);
 
     })
     .catch(error => {

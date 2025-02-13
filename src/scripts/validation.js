@@ -58,18 +58,19 @@ function hideInputError(input, errorElement, settings) {
 
 
 function toggleButtonState(inputs, button, settings) {
-    const isFormValid = inputs.some((input) => input.classList.contains(settings.inputErrorClass));
-    if (isFormValid) {
-        button.classList.remove(settings.inactiveButtonClass);
+    const regex = /^[a-zA-Zа-яА-ЯёЁ\s-]+$/;
+    const isFormInvalid = inputs.some(input => !input.validity.valid || input.value.trim() === "" || !regex.test(input.value));
+    if (isFormInvalid) {
+        button.classList.add(settings.inactiveButtonClass);
         button.setAttribute("disabled", "");
     } else {
-        button.classList.add(settings.inactiveButtonClass);
+        button.classList.remove(settings.inactiveButtonClass);
         button.removeAttribute("disabled");
     }
 }
 
-export function clearValidation(form) {
-    const errorElements = form.querySelectorAll('.popup__error');
+export function clearValidation(form, settings) {
+    const errorElements = form.querySelectorAll(settings.errorClass);
     errorElements.forEach(errorElement => {
         errorElement.textContent = '';
     })

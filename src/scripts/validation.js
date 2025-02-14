@@ -59,7 +59,14 @@ function hideInputError(input, errorElement, settings) {
 
 function toggleButtonState(inputs, button, settings) {
     const regex = /^[a-zA-Zа-яА-ЯёЁ\s-]+$/;
-    const isFormInvalid = inputs.some(input => !input.validity.valid || input.value.trim() === "" || !regex.test(input.value));
+    
+    const isFormInvalid = inputs.some(input => {
+        if (input.type === "url") {
+            return !input.validity.valid || input.value.trim() === "";
+        } 
+        return !input.validity.valid || input.value.trim() === ""  || !regex.test(input.value);
+    });
+
     if (isFormInvalid) {
         button.classList.add(settings.inactiveButtonClass);
         button.setAttribute("disabled", "");

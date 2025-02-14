@@ -16,6 +16,7 @@ const profileButton = document.querySelector('.profile__edit-button');
 const newCardButton = document.querySelector('.profile__add-button');
 const avatarButton = document.querySelector('.profile__image-button')
 const popupImage = document.querySelector('.popup_type_image')
+const popups = document.querySelectorAll('.popup');
 const imageName = popupImage.querySelector('.popup__image');
 const imageCaption = popupImage.querySelector('.popup__caption');
 
@@ -148,9 +149,16 @@ function resetButtonText() {
     })
 }
 
-closeByOvelayClick();
+popups.forEach((popupElement) => { 
+    popupElement.addEventListener('click', closeByOvelayClick); 
+    
+    const closeButton = popupElement.querySelector('.popup__close'); 
+    if (closeButton) { 
+        closeButton.addEventListener('click', () => closePopup(popupElement)); 
+    } 
+});
+
 setProfileSettings(profilePopup);
-getUserData();
 enableValidation({
     formSelector: '.popup__form',
     inputSelector: '.popup__input',

@@ -22,17 +22,8 @@ function handleEscape(evt) {
     }
 }
 
-export function closeByOvelayClick() {
-    const popups = document.querySelectorAll('.popup');
-    popups.forEach((popupElement) => {
-        popupElement.addEventListener('click', (event) => {
-            if (event.target.classList.contains('popup_is-opened')) {
-                closePopup(popupElement)
-            }
-        })
-        const closeButton = popupElement.querySelector('.popup__close');
-        if (closeButton) {
-            closeButton.addEventListener('click', () => closePopup(popupElement))
-        }
-    })
+export function closeByOvelayClick(evt) {
+    if (evt.target.classList.contains('popup_is-opened')) {
+        closePopup(evt.target);
+    }
 }
